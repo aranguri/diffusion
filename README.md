@@ -12,9 +12,6 @@ inter($s$) / intra ($\eta$)
 | E   | 1          |        |         |                 |
 
 
-
-
-
 Paper
 https://arxiv.org/pdf/2310.03575
 
@@ -23,3 +20,9 @@ https://sphinxteam.github.io/EPFLDoctoralLecture2022/Notes.pdf
 
 Stoch Interpolants
 https://arxiv.org/pdf/2303.08797
+
+Useful results
+
+$$
+\mathbb E[x_1|x_t] = \frac{\beta_t}{\alpha_t^2 + \beta_t^2} x_t + \frac{\alpha_t^2}{\alpha_t^2 + \beta_t^2}\mu \tanh\left(\frac{\beta_t}{\alpha_t^2 + \beta_t^2} \langle x_t,\mu\rangle + \frac{1}{2}\log\left(\frac{p}{1-p}\right)\right)
+$$
