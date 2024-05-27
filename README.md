@@ -2,14 +2,14 @@
 
 for $x_1\sim \eta + s\mu$ with $\eta\sim \text{N}(0,\sigma^2 I), s \sim \text{Ber}(p)$
 
-inter($s$) / intra ($\eta$)
+inter($p$) / intra ($\sigma$) / intra ($\mu$)
 
 | variance | order of $b$ | Math | Experiment| Comment         |
-|-----|------------|------|-----------|-----------------|
-| P   | 0          | no/yes | no/yes  |   from paper    |
-| P   | 1          | no/yes | no/yes  |  $b$ vanishes   |
-| P   | $d$        |        |         |                 |
-| E   | 1          |        |         |                 |
+|----------|------------|------|------|-----------------|
+| P       | 0          | no/yes/yes | no/yes/yes  |   from paper    |
+| P   | 1          | no/yes/yes | no/yes/yes      |  $b$ vanishes   |
+| P   | $d$        | ?/?/?      | ?/?/?       |                 |
+| E   | 1          | ?/no/?     | ?/?/?       |         |
 
 
 Paper
