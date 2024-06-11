@@ -1,6 +1,5 @@
 # work in progress
-from torch.func import grad
-from data import GenerateData
+
 
 def quad_loss(y_pred, y):
     # Loss function
@@ -8,29 +7,30 @@ def quad_loss(y_pred, y):
     return torch.sum((y_pred-y)**2)/2
 
 class Diffusion:
-    def __init__(self, α, β, model, optimizer, X):
+    def __init__(self, α, β, generate_train_data, model, optimizer, X):
         self.α = α
         self.β = β
         self.α_dot = grad(α)
         self.β_dot = grad(β)
+        self.generate_train_data = generate_train_data
         self.model = model
         self.optimizer = optimizer
         self.X = X
         self.t = 0
-        self.losses = []
 
     def generate_data(self, ntot):
-        X_train = GenerateData(ntot, self.t)
-        self.train_loader = DataLoader(X_train, batch_size = ntot)
+        X_train = generate_train_data(ntot, self.t)
+        self.train_loader=DataLoader(X_train, batch_size = ntot)
 
     def train(self):
         ae=model().to(device)
         opt=optimizer(model)
 
+        losses = []
         for _ in range(epochs):
-            for x_t, x_1 in self.train_loader:   # Optimization steps
+            for x_t,x_1 in self.train_loader:   # Optimization steps
                 x1_pred = ae(x_t)
-                loss = quad_loss(x1_pred, x_1)
+                loss = quad_loss(x1_pred,x_1)
                 losses.append(loss.detach().cpu().numpy())
                 opt.zero_grad()
                 loss.backward()
