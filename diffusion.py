@@ -9,15 +9,13 @@ def quad_loss(y_pred, y):
     # The regularization enters at the level of the optimizer as the weight decay
     return torch.sum((y_pred-y)**2)/2
 
-# weight_decay_dict = {
-#     'w': 1e-4,
-#     'b': 1e-0,
-#     'c': 0.
-# }
-# lr
 
 class Diffusion:
-    def __init__(self, α, β, model_class, X_train, X_gen, N_steps, epochs, ntot, d, device):
+    def __init__(self, α, β, model_class, opt_gen, X_train, X_gen, N_steps, epochs, ntot, d, device):
+        '''
+        model_class: d -> model
+        opt_gen: model -> opt
+        '''
         self.α = α
         self.β = β
         self.α_dot = grad(α)
@@ -30,6 +28,7 @@ class Diffusion:
         self.epochs = epochs
         self.ntot = ntot
         self.model_class = model_class
+        self.opt_gen = opt_gen
         self.d = d
         self.device = device
         self.losses = []
@@ -55,11 +54,7 @@ class Diffusion:
 
     def train_step(self):
         self.model = self.model_class(self.d).to(self.device)
-        opt = torch.optim.Adam([
-            {'params': [self.model.w], 'weight_decay':1e-0},
-            #{'params': [model.b], 'weight_decay':1e-0}, 
-            {'params': [self.model.c], 'weight_decay':0.}]
-        , lr=.04)
+        opt = self.opt_gen(self.model)
 
         for _ in range(self.epochs):
             for x_t, x_1 in self.train_loader:   # Optimization steps
