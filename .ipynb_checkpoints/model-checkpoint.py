@@ -12,6 +12,7 @@ class AE(torch.nn.Module):
         #self.u=torch.nn.Parameter(torch.randn(self.d)) # network weight
         self.w=torch.nn.Parameter(torch.randn(self.d)) # network weight
         self.b=torch.nn.Parameter(torch.Tensor([0]))   # bias
+        #self.b=torch.nn.Parameter(torch.randn(1) * .01)   # bias
 
     def forward(self, x):
         h=torch.tanh((x@self.w)/(self.d) + self.b)

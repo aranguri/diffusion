@@ -68,7 +68,7 @@ class Diffusion:
                 opt.step()
 
     def init_stats(self):
-        self.summary = {"p": [], "Mag":[], "Mag_std":[],"t":[],"Mag_ξ":[],"Mag_η":[], "Cosine":[],"Norm":[], "p": [], "M_t": [], "b":[], "Cos w":[]}
+        self.summary = {"p": [], "M_t": [], "Mag":[], "Mag_std":[],"t":[],"Mag_ξ":[],"Mag_η":[], "Cosine":[],"Norm":[], "p": [], "M_t": [], "b":[], "Cos w":[]}
 
     def stats(self):
         μ, σ, d = self.X_train.μ.numpy(), self.X_train.σ, self.X_train.d
@@ -84,6 +84,7 @@ class Diffusion:
         Simi = X_ @ μ/np.sqrt(d)/np.sqrt(np.sum(X_**2, 1))
 
         self.summary["p"].append(p)
+        self.summary["M_t"].append(M_t)
         self.summary["Mag"].append(Mt.mean())
         self.summary["Mag_std"].append(Mt.std())
         self.summary["t"].append(self.t)
