@@ -3,6 +3,7 @@ from torch.func import grad
 from torch.utils.data import DataLoader
 import numpy as np
 import torch
+#from IPython.display import display, update_display, clear_output
 
 def quad_loss(y_pred, y):
     # Loss function
@@ -41,6 +42,7 @@ class Diffusion:
     def run(self):
         self.init_stats()
         self.stats()
+        
         for _ in range(self.N_steps):
             print(self.t)
             self.generate_data()
@@ -55,7 +57,7 @@ class Diffusion:
     def train_step(self):
         self.model = self.model_class(self.d).to(self.device)
         opt = self.opt_gen(self.model)
-
+        
         for _ in range(self.epochs):
             for x_t, x_1 in self.train_loader:   # Optimization steps
                 x1_pred = self.model(x_t)
@@ -66,7 +68,7 @@ class Diffusion:
                 opt.step()
 
     def init_stats(self):
-        self.summary = {"Mag":[], "Mag_std":[],"t":[],"Mag_ξ":[],"Mag_η":[], "Cosine":[],"Norm":[], "p": [], "M_t": [], "b":[], "Cos w":[]}
+        self.summary = {"p": [], "Mag":[], "Mag_std":[],"t":[],"Mag_ξ":[],"Mag_η":[], "Cosine":[],"Norm":[], "p": [], "M_t": [], "b":[], "Cos w":[]}
 
     def stats(self):
         μ, σ, d = self.X_train.μ.numpy(), self.X_train.σ, self.X_train.d
@@ -81,6 +83,7 @@ class Diffusion:
         X_   = (X.T*np.sign(X@μ)).T
         Simi = X_ @ μ/np.sqrt(d)/np.sqrt(np.sum(X_**2, 1))
 
+        self.summary["p"].append(p)
         self.summary["Mag"].append(Mt.mean())
         self.summary["Mag_std"].append(Mt.std())
         self.summary["t"].append(self.t)
@@ -103,7 +106,7 @@ class Diffusion:
         β_dot_t=self.β_dot(torch.tensor(self.t)).item()
 
         with torch.no_grad():
-            X_1_pred = self.model(torch.tensor(self.X_gen.astype(np.float32))).numpy()
+            X_1_pred = self.model(torch.tensor(self.X_gen.astype(np.float32), device=self.device)).cpu().numpy()
             r = 0 if α_t == 0 else α_dot_t/α_t
             v = (β_dot_t -  β_t * r) * X_1_pred + r * self.X_gen
 
