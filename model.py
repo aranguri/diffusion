@@ -9,13 +9,13 @@ class AE(torch.nn.Module):
         super(AE, self).__init__()
         self.d = d
         self.c=torch.nn.Parameter(torch.Tensor([1]))   # skip connection
-        self.u=torch.nn.Parameter(torch.randn(self.d)) # network weight
+        #self.u=torch.nn.Parameter(torch.randn(self.d)) # network weight
         self.w=torch.nn.Parameter(torch.randn(self.d)) # network weight
         self.b=torch.nn.Parameter(torch.Tensor([0]))   # bias
 
     def forward(self, x):
         h=torch.tanh((x@self.w)/(self.d) + self.b)
-        y_hat = h.reshape(x.shape[0],1)@self.u.reshape(1,self.d)
+        y_hat = h.reshape(x.shape[0],1)@self.w.reshape(1,self.d)
         y_hat += self.c*x
         return y_hat
 

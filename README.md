@@ -35,3 +35,8 @@ arch (both dividing by d and sqrt(d))
  * coupled, with scalar d_t
  * coupled no scalar
 *no bias
+
+to do
+* plot induced m_t to compare with the plots
+* increase ntot
+Note that the form they have in the paper, they are OK taking the same w inside and outside the sign because the sign fn is invariant under scaling its input.
