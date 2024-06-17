@@ -12,8 +12,11 @@ inter($p$) / intra ($\sigma$) / intra ($\mu$)
 | E   | 1          | ?/no/?     | ?/?/?       |         |
 
 
-Paper
+Paper (Limited Sample Complexity)
 https://arxiv.org/pdf/2310.03575
+
+Phase Transitions of Diffusion
+https://arxiv.org/pdf/2402.18491
 
 Stat Phys
 https://sphinxteam.github.io/EPFLDoctoralLecture2022/Notes.pdf
