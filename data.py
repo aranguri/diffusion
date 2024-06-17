@@ -3,8 +3,9 @@ import torch
 
 class Data(Dataset):
     # data loader object
-    def __init__(self,n,μ,σ,d,p,α,β,device):
+    def __init__(self,n,std,μ,σ,d,p,α,β,device):
         self.μ=μ
+        self.std=std
         self.σ=σ
         self.n=n
         self.d=d

@@ -55,7 +55,7 @@ class Diffusion:
         self.t += self.dt
 
     def train_step(self):
-        self.model = self.model_class(self.d).to(self.device)
+        self.model = self.model_class(self.d, self.t).to(self.device)
         opt = self.opt_gen(self.model)
         
         for _ in range(self.epochs):
@@ -65,10 +65,12 @@ class Diffusion:
                 self.losses.append(loss.detach().cpu().numpy())
                 opt.zero_grad()
                 loss.backward()
+                #print('u grad: ', self.model.u.grad, '   w grad: ', self.model.w.grad)
+                #print()
                 opt.step()
 
     def init_stats(self):
-        self.summary = {"p": [], "M_t": [], "Mag":[], "Mag_std":[],"t":[],"Mag_ξ":[],"Mag_η":[], "Cosine":[],"Norm":[], "p": [], "M_t": [], "b":[], "Cos w":[]}
+        self.summary = {"p": [], "M_t": [], "Mag":[], "Mag_std":[],"t":[],"Mag_ξ":[],"Mag_η":[], "Cosine":[],"Norm":[], "p": [], "M_t": [], "b":[], "Cos w":[], "Cos u": [], "Grad w": [], "Grad u": []}
 
     def stats(self):
         μ, σ, d = self.X_train.μ.numpy(), self.X_train.σ, self.X_train.d
@@ -76,7 +78,7 @@ class Diffusion:
         X = self.X_gen
 
         p    = np.mean(X@μ > 0)
-        M_t  = X@μ
+        M_t  = X@μ/d
         Mt   = ((X.T*np.sign(X@μ)).T)@μ/d
         M_ξ  = ((X.T*np.sign(X@μ)).T)@ξ_tot/d
         M_η  = ((X.T*np.sign(X@μ)).T)@η_tot/d/σ
@@ -93,8 +95,13 @@ class Diffusion:
         self.summary["Cosine"].append(Simi.mean())
         self.summary["Norm"].append(np.sum(X_**2)/X_.shape[0]/d)
         if hasattr(self, "model"):
+            if hasattr(self.model, "u"):
+                u  = self.model.u.detach().cpu().numpy()
+                self.summary["Grad u"].append(self.model.u.grad.cpu().numpy())
+                self.summary["Cos u"].append( (u@μ)/(μ@μ)**0.5/(u@u)**0.5 )
             if hasattr(self.model, "w"):
                 w  = self.model.w.detach().cpu().numpy()
+                self.summary["Grad w"].append(self.model.w.grad.cpu().numpy())
                 self.summary["Cos w"].append( (w@μ)/(μ@μ)**0.5/(w@w)**0.5 )
             if hasattr(self.model, "b"):
                 b = self.model.b.detach().cpu().numpy()
