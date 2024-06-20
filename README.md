@@ -27,7 +27,7 @@ https://arxiv.org/pdf/2303.08797
 Useful results
 
 $$
-\mathbb E[x_1|x_t] = \frac{\beta_t}{\alpha_t^2 + \beta_t^2} x_t + \frac{\alpha_t^2}{\alpha_t^2 + \beta_t^2}\mu \tanh\left(\frac{\beta_t}{\alpha_t^2 + \beta_t^2} \langle x_t,\mu\rangle + \frac{1}{2}\log\left(\frac{p}{1-p}\right)\right)
+\mathbb E[x_1|x_t] = \frac{\beta_t}{\alpha_t^2 + \beta_t^2} x_t + \frac{\alpha_t^2}{\alpha_t^2 + \beta_t^2}\mu \tanh\left(\frac{\beta_t}{\alpha_t^2 + \beta_t^2} \langle x_t,\mu\rangle + \frac{1}{2}\sigma^{-1}(p)\right)
 $$
 
 Plan
