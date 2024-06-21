@@ -37,7 +37,7 @@ class Diffusion:
     def generate_data(self):
         self.X_train.set_t(self.t)
         self.X_train.gen_x1_xt()
-        self.train_loader = DataLoader(self.X_train, batch_size = self.ntot)
+        self.train_loader = DataLoader(self.X_train, batch_size = int(self.ntot))
 
     def run(self):
         self.init_stats()
@@ -55,12 +55,17 @@ class Diffusion:
         self.t += self.dt
 
     def train_step(self):
-        self.model = self.model_class(self.d, self.t).to(self.device)
+        if not hasattr(self, "model"):
+            self.model = self.model_class(self.d).to(self.device)
         opt = self.opt_gen(self.model)
-        
-        for _ in range(self.epochs):
+
+        if self.t < .03:
+            epochs = self.epochs
+        else:
+            epochs = int(self.epochs / 30)
+        for _ in range(epochs):
             for x_t, x_1 in self.train_loader:   # Optimization steps
-                x1_pred = self.model(x_t)
+                x1_pred = self.model(x_t, self.t)
                 loss = quad_loss(x1_pred, x_1)
                 self.losses.append(loss.detach().cpu().numpy())
                 opt.zero_grad()
@@ -70,7 +75,7 @@ class Diffusion:
                 opt.step()
 
     def init_stats(self):
-        self.summary = {"p": [], "M_t": [], "Mag":[], "Mag_std":[],"t":[],"Mag_ξ":[],"Mag_η":[], "Cosine":[],"Norm":[], "p": [], "M_t": [], "b":[], "Cos w":[], "Cos u": [], "Grad w": [], "Grad u": []}
+        self.summary = {"p": [], "M_t": [], "Mag":[], "Mag_std":[],"t":[],"Mag_ξ":[],"Mag_η":[], "Cosine":[],"Norm":[], "p": [], "M_t": [], "b":[], "Cos w":[], "Cos u": [], "Norm w": [], "Norm u": [], "Grad w": [], "Grad u": []}
 
     def stats(self):
         μ, σ, d = self.X_train.μ.numpy(), self.X_train.σ, self.X_train.d
@@ -97,11 +102,13 @@ class Diffusion:
         if hasattr(self, "model"):
             if hasattr(self.model, "u"):
                 u  = self.model.u.detach().cpu().numpy()
-                self.summary["Grad u"].append(self.model.u.grad.cpu().numpy())
+                #self.summary["Grad u"].append(self.model.u.grad.cpu().numpy())
+                self.summary["Norm u"].append(torch.norm(self.model.u).detach().cpu().numpy())
                 self.summary["Cos u"].append( (u@μ)/(μ@μ)**0.5/(u@u)**0.5 )
             if hasattr(self.model, "w"):
                 w  = self.model.w.detach().cpu().numpy()
-                self.summary["Grad w"].append(self.model.w.grad.cpu().numpy())
+                #self.summary["Grad w"].append(self.model.w.grad.cpu().numpy())
+                self.summary["Norm w"].append(torch.norm(self.model.w).detach().cpu().numpy())
                 self.summary["Cos w"].append( (w@μ)/(μ@μ)**0.5/(w@w)**0.5 )
             if hasattr(self.model, "b"):
                 b = self.model.b.detach().cpu().numpy()
@@ -114,7 +121,7 @@ class Diffusion:
         β_dot_t=self.β_dot(torch.tensor(self.t)).item()
 
         with torch.no_grad():
-            X_1_pred = self.model(torch.tensor(self.X_gen.astype(np.float32), device=self.device)).cpu().numpy()
+            X_1_pred = self.model(torch.tensor(self.X_gen.astype(np.float32), device=self.device), self.t).cpu().numpy()
             r = 0 if α_t == 0 else α_dot_t/α_t
             v = (β_dot_t -  β_t * r) * X_1_pred + r * self.X_gen
 
