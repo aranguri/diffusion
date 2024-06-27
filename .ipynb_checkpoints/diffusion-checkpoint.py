@@ -1,9 +1,7 @@
-# work in progress
 from torch.func import grad
 from torch.utils.data import DataLoader
 import numpy as np
 import torch
-#from IPython.display import display, update_display, clear_output
 
 def quad_loss(y_pred, y):
     # Loss function
@@ -12,7 +10,7 @@ def quad_loss(y_pred, y):
 
 
 class Diffusion:
-    def __init__(self, α, β, model_class, opt_gen, X_train, X_gen, N_steps, epochs, ntot, d, device):
+    def __init__(self, α, β, model_class, opt_gen, X_train, X_gen, N_steps, ntot, d, device, num_batches):
         '''
         model_class: d -> model
         opt_gen: model -> opt
@@ -26,7 +24,7 @@ class Diffusion:
         self.t = 0.
         self.N_steps = N_steps
         self.dt = 1./N_steps
-        self.epochs = epochs
+        self.num_batches = num_batches
         self.ntot = ntot
         self.model_class = model_class
         self.opt_gen = opt_gen
@@ -35,6 +33,7 @@ class Diffusion:
         self.losses = []
 
     def generate_data(self):
+        self.X_train.gen_rand()
         self.X_train.set_t(self.t)
         self.X_train.gen_x1_xt()
         self.train_loader = DataLoader(self.X_train, batch_size = int(self.ntot))
@@ -55,23 +54,20 @@ class Diffusion:
         self.t += self.dt
 
     def train_step(self):
-        if not hasattr(self, "model"):
-            self.model = self.model_class(self.d).to(self.device)
+        #if not hasattr(self, "model"):
+        self.model = self.model_class(self.d).to(self.device)
         opt = self.opt_gen(self.model)
-
-        if self.t < .03:
-            epochs = self.epochs
-        else:
-            epochs = int(self.epochs / 30)
-        for _ in range(epochs):
-            for x_t, x_1 in self.train_loader:   # Optimization steps
+        counter=0
+        for _ in range(self.num_batches):
+            for x_t, x_1 in self.train_loader:
+                print(x_t[0, 0])
+                print(counter)
+                counter +=1
                 x1_pred = self.model(x_t, self.t)
                 loss = quad_loss(x1_pred, x_1)
                 self.losses.append(loss.detach().cpu().numpy())
                 opt.zero_grad()
                 loss.backward()
-                #print('u grad: ', self.model.u.grad, '   w grad: ', self.model.w.grad)
-                #print()
                 opt.step()
 
     def init_stats(self):
@@ -79,14 +75,14 @@ class Diffusion:
 
     def stats(self):
         μ, σ, d = self.X_train.μ.numpy(), self.X_train.σ, self.X_train.d
-        ξ_tot, η_tot = self.X_train.ξ_tot, self.X_train.η_tot
+        #ξ_tot, η_tot = self.X_train.ξ_tot, self.X_train.η_tot
         X = self.X_gen
 
         p    = np.mean(X@μ > 0)
         M_t  = X@μ/d
         Mt   = ((X.T*np.sign(X@μ)).T)@μ/d
-        M_ξ  = ((X.T*np.sign(X@μ)).T)@ξ_tot/d
-        M_η  = ((X.T*np.sign(X@μ)).T)@η_tot/d/σ
+        #M_ξ  = ((X.T*np.sign(X@μ)).T)@ξ_tot/d
+        #M_η  = ((X.T*np.sign(X@μ)).T)@η_tot/d/σ
         X_   = (X.T*np.sign(X@μ)).T
         Simi = X_ @ μ/np.sqrt(d)/np.sqrt(np.sum(X_**2, 1))
 
@@ -95,8 +91,8 @@ class Diffusion:
         self.summary["Mag"].append(Mt.mean())
         self.summary["Mag_std"].append(Mt.std())
         self.summary["t"].append(self.t)
-        self.summary["Mag_ξ"].append(M_ξ.mean())
-        self.summary["Mag_η"].append(M_η.mean())
+        #self.summary["Mag_ξ"].append(M_ξ.mean())
+        #self.summary["Mag_η"].append(M_η.mean())
         self.summary["Cosine"].append(Simi.mean())
         self.summary["Norm"].append(np.sum(X_**2)/X_.shape[0]/d)
         if hasattr(self, "model"):

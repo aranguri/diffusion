@@ -25,48 +25,44 @@ class AE_4(torch.nn.Module):
 
 class AE_3(torch.nn.Module):
     """
-    f(x) = c*x + w k tanh( x'w/d + b )
-    """
-
-    def __init__(self, d, t):
-        super(AE_3, self).__init__()
-        self.d = d
-        self.c=torch.nn.Parameter(torch.Tensor([1]))   # skip connection
-        self.k=torch.nn.Parameter(torch.Tensor([1])) # network weight
-        self.w=torch.nn.Parameter(torch.randn(self.d)) # network weight
-        self.b=torch.nn.Parameter(torch.Tensor([0]))   # bias
-        self.t=t
-
-    def forward(self, x):
-        h = self.k * torch.tanh((x@self.w)/(self.d) + self.b)
-        y_hat = h.reshape(x.shape[0],1) @ self.w.reshape(1,self.d)
-        y_hat += self.c*x
-        return y_hat
-
-class AE_2(torch.nn.Module):
-    """
+    learns u and b
     f(x) = c*x + u * tanh( x'w/d + b )
     """
 
-    def __init__(self, d, t):
-        super(AE_2, self).__init__()
+    def __init__(self, d):
+        super(AE_3, self).__init__()
         self.d = d
         self.c=torch.nn.Parameter(torch.Tensor([1]))   # skip connection
-        #self.u=torch.nn.Parameter(torch.Tensor([1])) # network weight
         self.u=torch.nn.Parameter(torch.randn(self.d)) # network weight
-        self.w=torch.nn.Parameter(torch.randn(self.d)) # network weight
         self.b=torch.nn.Parameter(torch.Tensor([0]))   # bias
-        self.t=t
-        #self.b=torch.nn.Parameter(torch.randn(1) * .01)   # bias
 
-    def forward(self, x):
-        #mu = [1] * self.d
-        coef = self.t / (self.d * (1 - self.t)**2 + self.t**2)
-        #h=torch.tanh((x@self.w)/(self.d) + self.b)
-        #print(x.shape)
-        h=torch.tanh(coef * (torch.sum(x, axis=1)) + self.b)
-        y_hat = h.reshape(x.shape[0],1)@self.w.reshape(1,self.d)
-        y_hat += self.c*x
+    def forward(self, x, t):
+        c = t / (self.d * (1-t) ** 2 + t ** 2)
+        coef1 = t / (self.d * (1 - t) ** 2 + t ** 2)
+        h = torch.tanh(coef1 * torch.sum(x, axis=1) + self.b)
+        
+        mu = torch.ones((self.d, 1), device=h.get_device())
+        y_hat = h.reshape(x.shape[0],1)@self.u.reshape(1,self.d)
+        y_hat += c*x 
+        return y_hat
+
+class AE_2(torch.nn.Module):
+    def __init__(self, d):
+        super(AE_2, self).__init__()
+        self.d = d
+        #self.c=torch.nn.Parameter(torch.Tensor([1]))   # skip connection
+        self.w=torch.nn.Parameter(torch.randn(self.d)) # network weight
+        #self.u=torch.nn.Parameter(torch.randn(self.d)) # network weight
+        #self.b=torch.nn.Parameter(torch.Tensor([0]))   # bias
+
+    def forward(self, x, t):
+        c = t / (self.d * (1-t) ** 2 + t ** 2)
+        h = torch.tanh(x@self.w + .693)
+        
+        coef2 = self.d * (1 - t) / (self.d * (1 - t)**2 + t**2)
+        mu = torch.ones((self.d, 1), device=h.get_device())
+        y_hat = (coef2 * mu @ h.reshape(1, h.shape[0])).T
+        y_hat += c*x 
         return y_hat
 
 class AE_1(torch.nn.Module):
