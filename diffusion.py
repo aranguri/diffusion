@@ -57,18 +57,14 @@ class Diffusion:
         #if not hasattr(self, "model"):
         self.model = self.model_class(self.d).to(self.device)
         opt = self.opt_gen(self.model)
-        counter=0
-        for _ in range(self.num_batches):
-            for x_t, x_1 in self.train_loader:
-                print(x_t[0, 0])
-                print(counter)
-                counter +=1
-                x1_pred = self.model(x_t, self.t)
-                loss = quad_loss(x1_pred, x_1)
-                self.losses.append(loss.detach().cpu().numpy())
-                opt.zero_grad()
-                loss.backward()
-                opt.step()
+        for x_t, x_1 in self.train_loader:
+            x_t, x_1 = x_t.to(self.device), x_1.to(self.device)
+            x1_pred = self.model(x_t, self.t)
+            loss = quad_loss(x1_pred, x_1)
+            self.losses.append(loss.detach().cpu().numpy())
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
 
     def init_stats(self):
         self.summary = {"p": [], "M_t": [], "Mag":[], "Mag_std":[],"t":[],"Mag_ξ":[],"Mag_η":[], "Cosine":[],"Norm":[], "p": [], "M_t": [], "b":[], "Cos w":[], "Cos u": [], "Norm w": [], "Norm u": [], "Grad w": [], "Grad u": []}

@@ -57,9 +57,9 @@ class AE_2(torch.nn.Module):
 
     def forward(self, x, t):
         c = t / (self.d * (1-t) ** 2 + t ** 2)
-        h = torch.tanh(x@self.w + .693)
+        h = torch.tanh(x@self.w/self.d + .693)
         
-        coef2 = self.d * (1 - t) / (self.d * (1 - t)**2 + t**2)
+        coef2 = self.d * (1 - t) ** 2 / (self.d * (1 - t)**2 + t**2)
         mu = torch.ones((self.d, 1), device=h.get_device())
         y_hat = (coef2 * mu @ h.reshape(1, h.shape[0])).T
         y_hat += c*x 

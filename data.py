@@ -45,10 +45,10 @@ class Data(Dataset):
         x_1 = torch.tile(x_1, (self.num_batches, 1))
         # constructs x(t)
         x_t = self.ξ * self.α(self.t) + x_1 * self.β(self.t)
-        self.X_t, self.X_1 = x_t.to(self.device), x_1.to(self.device)
+        self.X_t, self.X_1 = x_t, x_1
 
     def __getitem__(self,idx):
         return self.X_t[idx].to(self.device),self.X_1[idx].to(self.device)
 
     def __len__(self):
-        return self.n
+        return self.n * self.num_batches
