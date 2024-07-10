@@ -1,0 +1,1 @@
+slurmstepd: error: *** JOB 48284320 ON gh011 CANCELLED AT 2024-07-07T16:00:44 ***

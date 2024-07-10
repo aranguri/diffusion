@@ -4,7 +4,7 @@ import torch
 class Data(Dataset):
     # data loader object
     def __init__(self,n,std,μ,σ,d,p,α,β,device,num_batches):
-        self.μ=μ
+        self.μ=μ.to(device)
         self.std=std
         self.σ=σ
         self.n=n
@@ -18,22 +18,22 @@ class Data(Dataset):
 
     def gen_rand(self):
         # x_0^μ. 
-        self.ξ=torch.randn(self.n * self.num_batches, self.d)
+        self.ξ=torch.randn(self.n * self.num_batches, self.d, device=self.device)
         
         # z^μ
-        gen1 = torch.Generator().manual_seed(1)
-        self.η=torch.randn(self.n,self.d,generator=gen1)
+        gen1 = torch.Generator(device=self.device).manual_seed(1)
+        self.η=torch.randn(self.n,self.d,generator=gen1, device=self.device)
         
         # s^μ
-        gen3 = torch.Generator().manual_seed(2)
-        self.s=torch.sign(2.*(torch.rand(self.n,generator=gen3)[:self.n] < self.p) -1 ) 
+        gen3 = torch.Generator(device=self.device).manual_seed(2)
+        self.s=torch.sign(2.*(torch.rand(self.n,generator=gen3, device=self.device)[:self.n] < self.p) -1 ) 
 
         # useful quantities
         #self.ξ_tot=torch.sum(self.ξ.T*self.s,1).flatten()/self.n # ξ vector
         #self.η_tot=torch.sum(self.η.T*self.s,1).flatten()/self.n # η vector
         #self.ξ_tot=self.ξ_tot.numpy()
         #self.η_tot=self.η_tot.numpy()
-        self.mu=self.μ.numpy()
+        self.mu=self.μ.cpu().numpy()#.to(self.device)
 
     def set_t(self, t):
         self.t = t
@@ -46,9 +46,10 @@ class Data(Dataset):
         # constructs x(t)
         x_t = self.ξ * self.α(self.t) + x_1 * self.β(self.t)
         self.X_t, self.X_1 = x_t, x_1
+        #self.X_t.to(self.device), self.X_1.to(self.device)
 
     def __getitem__(self,idx):
-        return self.X_t[idx].to(self.device),self.X_1[idx].to(self.device)
+        return self.X_t[idx], self.X_1[idx]
 
     def __len__(self):
         return self.n * self.num_batches

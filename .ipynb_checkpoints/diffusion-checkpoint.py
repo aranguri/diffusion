@@ -10,7 +10,7 @@ def quad_loss(y_pred, y):
 
 
 class Diffusion:
-    def __init__(self, α, β, model_class, opt_gen, X_train, X_gen, N_steps, ntot, d, device, num_batches):
+    def __init__(self, α, β, model_class, opt_gen, X_train, X_gen, N_steps, ntot, d, device, num_batches, num_num_batches):
         '''
         model_class: d -> model
         opt_gen: model -> opt
@@ -25,6 +25,7 @@ class Diffusion:
         self.N_steps = N_steps
         self.dt = 1./N_steps
         self.num_batches = num_batches
+        self.num_num_batches = num_num_batches
         self.ntot = ntot
         self.model_class = model_class
         self.opt_gen = opt_gen
@@ -44,8 +45,11 @@ class Diffusion:
         
         for _ in range(self.N_steps):
             print(self.t)
-            self.generate_data()
-            self.train_step()
+            self.reset_model()
+            self.set_opt()
+            for _ in range(self.num_num_batches):
+                self.generate_data()
+                self.train_step()
             self.generate_step()
             self.t_step()
             self.stats()
@@ -53,18 +57,22 @@ class Diffusion:
     def t_step(self):
         self.t += self.dt
 
+    def reset_model(self):
+        self.model = self.model_class(self.d).to(self.device)
+
+    def set_opt(self):
+        self.opt = self.opt_gen(self.model)
+        
     def train_step(self):
         #if not hasattr(self, "model"):
-        self.model = self.model_class(self.d).to(self.device)
-        opt = self.opt_gen(self.model)
         for x_t, x_1 in self.train_loader:
             x_t, x_1 = x_t.to(self.device), x_1.to(self.device)
             x1_pred = self.model(x_t, self.t)
             loss = quad_loss(x1_pred, x_1)
             self.losses.append(loss.detach().cpu().numpy())
-            opt.zero_grad()
+            self.opt.zero_grad()
             loss.backward()
-            opt.step()
+            self.opt.step()
 
     def init_stats(self):
         self.summary = {"p": [], "M_t": [], "Mag":[], "Mag_std":[],"t":[],"Mag_ξ":[],"Mag_η":[], "Cosine":[],"Norm":[], "p": [], "M_t": [], "b":[], "Cos w":[], "Cos u": [], "Norm w": [], "Norm u": [], "Grad w": [], "Grad u": []}

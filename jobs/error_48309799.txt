@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/sa7270/diffusion/run_experiment.py", line 47, in <module>
+    date = datetime.now().strftime("%Y-%m-%d %H:%M")
+AttributeError: module 'datetime' has no attribute 'now'

@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/home/sa7270/diffusion/run_experiment.py", line 44, in <module>
+    diffusion.run()
+  File "/home/sa7270/diffusion/diffusion.py", line 54, in run
+    self.generate_data()
+  File "/home/sa7270/diffusion/diffusion.py", line 39, in generate_data
+    self.X_train.gen_rand()
+  File "/home/sa7270/diffusion/data.py", line 25, in gen_rand
+    self.η=torch.randn(self.n,self.d,generator=gen1, device=self.device)
+RuntimeError: Expected a 'cuda' device type for generator but found 'cpu'
