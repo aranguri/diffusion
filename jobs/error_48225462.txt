@@ -1,1 +1,0 @@
-slurmstepd: error: *** JOB 48225462 ON ga031 CANCELLED AT 2024-07-05T19:00:05 ***

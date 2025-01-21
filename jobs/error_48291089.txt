@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "/home/sa7270/diffusion/run_experiment.py", line 1, in <module>
-    from diffusion import Diffusion
-  File "/home/sa7270/diffusion/diffusion.py", line 72
-    x_t, x_1 = x_t.to(self.device), x_1.to(self.device); print(x_t.shape))
-                                                                         ^
-SyntaxError: unmatched ')'

@@ -1,2 +1,0 @@
-/opt/slurm/data/slurmd/job48250453/slurm_script: line 16: 3421154 Killed                  singularity exec --nv $SINGULARITY_IMAGE python run_experiment.py
-slurmstepd: error: Detected 1 oom_kill event in StepId=48250453.batch. Some of the step tasks have been OOM Killed.
